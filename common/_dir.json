@@ -1,0 +1,15 @@
+{
+  "_id": "script.js.common",
+  "common": {
+    "name": "common"
+  },
+  "type": "channel",
+  "native": {},
+  "from": "system.host.phoscon.cli",
+  "ts": 1573058476821,
+  "acl": {
+    "object": 1636,
+    "owner": "system.user.admin",
+    "ownerGroup": "system.group.administrator"
+  }
+}

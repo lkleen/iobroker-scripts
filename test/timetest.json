@@ -1,0 +1,40 @@
+/* -- do not edit following lines - START --
+{
+  "expert": true,
+  "debug": false,
+  "verbose": false
+}
+-- do not edit previous lines - END --*/
+const Periods =  {
+    MORNING: {begin: 601, end: 800, name: 'morning'},
+    DAY: {begin: 801, end: 2200, name: 'day'},
+    EVENING: {begin: 2201, end: 2400, name: 'evening'},
+    NIGHT: {begin: 0, end: 600, name: 'night'}
+};
+
+var getPeriod = function (periods, timevalue) {
+    for (period in periods) {
+        var range = periods[period];
+
+        // range within day bounds
+        if (range.begin < range.end) {
+            if (timevalue >= range.begin && timevalue <= range.end) {
+                return range;
+            }
+        } else { // range over midnight
+            if (timevalue >= range.begin || timevalue <= range.end) {
+                return range;
+            }        
+        }
+    }
+    return null;
+};
+
+log(getPeriod (Periods, 530).name);
+log(getPeriod (Periods, 600).name);
+log(getPeriod (Periods, 601).name);
+log(getPeriod (Periods, 800).name);
+log(getPeriod (Periods, 801).name);
+log(getPeriod (Periods, 2200).name);
+log(getPeriod (Periods, 2201).name);
+log(getPeriod (Periods, 0).name);

@@ -1,0 +1,51 @@
+/* -- do not edit following lines - START --
+{
+  "expert": true,
+  "debug": false,
+  "verbose": false
+}
+-- do not edit previous lines - END --*/
+var presenceTrigger = {id: 'deconz.0.Sensors.16.presence', val: true}; /* presence trigger */
+var absenseTrigger  = {id: 'deconz.0.Sensors.16.presence', val: false}; /* absense trigger */
+
+// 'deconz.0.Lights.3' Flur Mitte
+// 'deconz.0.Lights.4' Flur Haustür
+var isHallLightOn = function () {return getState('deconz.0.Lights.3.on').val || getState('deconz.0.Lights.4.on').val};
+var isOnByMotion = false;
+
+var localTime = new LocalTime ();
+
+var turnOffDelay = 5 * 60000;
+var turnOffTimer = new Timer ();
+
+ //log(JSON.stringify(date));
+
+ var turnOnLight = function (period) {
+     switch (period)
+     {
+        case Period.DAY: setState ('scene.0.hall.on', true, null); break;
+        case Period.NIGHT: setState ('scene.0.hall.nightlight', true, null); break;
+     }
+    log('turn on light:' + period.name, 'debug');
+    isOnByMotion = true;     
+ };
+
+on(presenceTrigger, function (obj) {
+  log('presence: true, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), 'debug');
+  turnOffTimer.reset ();
+  if (!isHallLightOn ()) {
+    turnOnLight (localTime.getPeriod ());
+  }
+});
+
+on(absenseTrigger, function (obj) {
+    log('presence: false, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), 'debug');
+    if (!isOnByMotion || !isHallLightOn ()) {
+        return;
+    }
+
+    if (turnOffTimer.isElapsed(turnOffDelay)) {
+        isOnByMotion = false;
+        setState ('scene.0.hall.off', true, null);
+    }
+});

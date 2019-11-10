@@ -1,0 +1,52 @@
+/* -- do not edit following lines - START --
+{
+  "expert": true,
+  "debug": false,
+  "verbose": false
+}
+-- do not edit previous lines - END --*/
+const Period = {
+    DAY: {begin: 700, end: 2400, name: 'day'},
+    NIGHT: {begin: 0, end: 700, name: 'night'}
+};
+
+function Timer () {
+    var timer = Object.create (Timer.methods);
+    timer.timestamp = 0;
+    return timer;
+}
+
+Timer.methods = {
+    reset: function () {
+        this.timestamp = new Date ().getTime ();
+    },
+
+    getElapsedMilliseconds: function () {
+        return new Date().getTime () - this.timestamp;
+    },
+
+    isElapsed: function (milliseconds) {
+        return this.getElapsedMilliseconds () > milliseconds;
+    }
+};
+
+function LocalTime () {
+    var localTime = Object.create (LocalTime.methods);
+    return localTime;
+}
+
+LocalTime.methods = {
+    hhmm: function () {
+        var date = new Date ();
+        var localHour = date.getUTCHours () + 1;
+        return localHour * 100 + date.getMinutes ();
+    },
+
+    getPeriod: function () {
+        var timevalue = this.hhmm ();
+        if (timevalue > Period.DAY.begin && timevalue < Period.DAY.end) {
+            return Period.DAY;
+        }
+        return Period.NIGHT;
+    },
+};
