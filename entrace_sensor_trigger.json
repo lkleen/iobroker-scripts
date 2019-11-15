@@ -5,17 +5,39 @@
   "verbose": false
 }
 -- do not edit previous lines - END --*/
-var presenceTrigger = {id: 'deconz.0.Sensors.16.presence', val: true}; /* presence trigger */
-var absenseTrigger  = {id: 'deconz.0.Sensors.16.presence', val: false}; /* absense trigger */
+var sensorControlId = 'scene.0.sensor.hall.on';
+var sensorId = 'deconz.0.Sensors.16.presence';
 
-// 'deconz.0.Lights.3' Flur Mitte
-// 'deconz.0.Lights.4' Flur Haustür
-var isHallLightOn = function () {return getState('deconz.0.Lights.3.on').val || getState('deconz.0.Lights.4.on').val};
+var light1Id = 'deconz.0.Lights.3.on';
+var light2Id = 'deconz.0.Lights.4.on';
+
+var morningState = 'scene.0.hall.nightlight';
+var dayState = 'scene.0.hall.on';
+var eveningState = 'scene.0.hall.nightlight';
+var nightState = 'scene.0.hall.nightlight';
+var offState = 'scene.0.hall.off';
+
+var offDelay = 1000; //5 * 60000;
+
+var logLevel = 'info';
+
+var isSensorOn = function () {return getState(sensorControlId).val};
+
+var presenceTrigger = {id: sensorId, val: true}; /* presence trigger */
+var absenseTrigger  = {id: sensorId, val: false}; /* absense trigger */
+
+var isHallLightOn = function () {return getState(light1Id).val || getState(light2Id).val};
 var isOnByMotion = false;
 
-var localTime = new LocalTime ();
+var lightsOnCondition = function () {
+    if (isHallLightOn ()) {return false;}
+    return isSensorOn ();
+}
 
-var turnOffDelay = 5 * 60000;
+var localTime = new LocalTime ();
+localTime.getPeriod ();
+
+var turnOffDelay = offDelay;
 var turnOffTimer = new Timer ();
 
  //log(JSON.stringify(date));
@@ -23,29 +45,31 @@ var turnOffTimer = new Timer ();
  var turnOnLight = function (period) {
      switch (period)
      {
-        case Period.DAY: setState ('scene.0.hall.on', true, null); break;
-        case Period.NIGHT: setState ('scene.0.hall.nightlight', true, null); break;
+        case Periods.MORNING: setState (morningState, true, null); break;
+        case Periods.DAY: setState (dayState, true, null); break;
+        case Periods.EVENING: setState (eveningState, true, null); break;
+        case Periods.NIGHT: setState (nightState, true, null); break;
      }
-    log('turn on light:' + period.name, 'debug');
+    log('turn on light:' + period.name, logLevel);
     isOnByMotion = true;     
  };
 
 on(presenceTrigger, function (obj) {
-  log('presence: true, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), 'debug');
+  log('presence: true, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), logLevel);
   turnOffTimer.reset ();
-  if (!isHallLightOn ()) {
+  if (lightsOnCondition ()) {
     turnOnLight (localTime.getPeriod ());
   }
 });
 
 on(absenseTrigger, function (obj) {
-    log('presence: false, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), 'debug');
+    log('presence: false, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), logLevel);
     if (!isOnByMotion || !isHallLightOn ()) {
         return;
     }
 
     if (turnOffTimer.isElapsed(turnOffDelay)) {
         isOnByMotion = false;
-        setState ('scene.0.hall.off', true, null);
+        setState (offState, true, null);
     }
 });

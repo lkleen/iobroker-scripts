@@ -5,9 +5,11 @@
   "verbose": false
 }
 -- do not edit previous lines - END --*/
-const Period = {
-    DAY: {begin: 700, end: 2400, name: 'day'},
-    NIGHT: {begin: 0, end: 700, name: 'night'}
+const Periods =  {
+    MORNING: {begin: 601, end: 800, name: 'morning'},
+    DAY: {begin: 801, end: 2200, name: 'day'},
+    EVENING: {begin: 2201, end: 2400, name: 'evening'},
+    NIGHT: {begin: 0, end: 600, name: 'night'}
 };
 
 function Timer () {
@@ -44,9 +46,20 @@ LocalTime.methods = {
 
     getPeriod: function () {
         var timevalue = this.hhmm ();
-        if (timevalue > Period.DAY.begin && timevalue < Period.DAY.end) {
-            return Period.DAY;
+        for (period in Periods) {
+            var range = Periods[period];
+
+            // range within day bounds
+            if (range.begin < range.end) {
+                if (timevalue >= range.begin && timevalue <= range.end) {
+                    return range;
+                }
+            } else { // range over midnight
+                if (timevalue >= range.begin || timevalue <= range.end) {
+                    return range;
+                }        
+            }
         }
-        return Period.NIGHT;
+        return null;
     },
 };

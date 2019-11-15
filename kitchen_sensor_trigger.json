@@ -13,6 +13,8 @@ var absenseTrigger  = {id: 'deconz.0.Sensors.2.presence', val: false}; /* absens
 var isHallLightOn = function () {return getState('deconz.0.Lights.6.on').val || getState('deconz.0.Lights.9.on').val};
 var isOnByMotion = false;
 
+var logLevel = 'debug';
+
 var localTime = new LocalTime ();
 
 var turnOffDelay = 5 * 60000;
@@ -23,15 +25,17 @@ var turnOffTimer = new Timer ();
  var turnOnLight = function (period) {
      switch (period)
      {
-        case Period.DAY: setState ('scene.0.kitchen.on', true, null); break;
-        case Period.NIGHT: setState ('scene.0.kitchen.nightlight', true, null); break;
+        case Periods.MORNING: setState ('scene.0.kitchen.morning', true, null); break;
+        case Periods.DAY: setState ('scene.0.kitchen.on', true, null); break;
+        case Periods.EVENING: setState ('scene.0.kitchen.evening', true, null); break;
+        case Periods.NIGHT: setState ('scene.0.kitchen.night', true, null); break;
      }
-    log('turn on light:' + period.name, 'debug');
+    log('turn on light:' + period.name, logLevel);
     isOnByMotion = true;     
  };
 
 on(presenceTrigger, function (obj) {
-  log('presence: true, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), 'debug');
+  log('presence: true, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), logLevel);
   turnOffTimer.reset ();
   if (!isHallLightOn ()) {
     turnOnLight (localTime.getPeriod ());
@@ -39,7 +43,7 @@ on(presenceTrigger, function (obj) {
 });
 
 on(absenseTrigger, function (obj) {
-    log('presence: false, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), 'debug');
+    log('presence: false, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), logLevel);
     if (!isOnByMotion || !isHallLightOn ()) {
         return;
     }
