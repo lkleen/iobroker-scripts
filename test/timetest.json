@@ -2,7 +2,8 @@
 {
   "expert": true,
   "debug": false,
-  "verbose": false
+  "verbose": false,
+  "enabled": false
 }
 -- do not edit previous lines - END --*/
 const Periods =  {

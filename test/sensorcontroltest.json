@@ -1,0 +1,21 @@
+{
+  "common": {
+    "name": "sensorcontroltest",
+    "expert": true,
+    "engineType": "Javascript/js",
+    "engine": "system.adapter.javascript.0",
+    "source": "",
+    "debug": false,
+    "verbose": false
+  },
+  "type": "script",
+  "from": "system.adapter.admin.0",
+  "user": "system.user.admin",
+  "ts": 1573825693676,
+  "_id": "script.js.test.sensorcontroltest",
+  "acl": {
+    "object": 1636,
+    "owner": "system.user.admin",
+    "ownerGroup": "system.group.administrator"
+  }
+}
