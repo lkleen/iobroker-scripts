@@ -2,54 +2,34 @@
 {
   "expert": true,
   "debug": false,
-  "verbose": true
+  "verbose": false
 }
 -- do not edit previous lines - END --*/
-var presenceTrigger = {id: 'deconz.0.Sensors.2.presence', val: true}; /* presence trigger */
-var absenseTrigger  = {id: 'deconz.0.Sensors.2.presence', val: false}; /* absense trigger */
+var parameters = {
+    sensorControlId : 'scene.0.sensor.kitchen.on',
+    sensorId        : 'deconz.0.Sensors.2.presence',
 
-// 'deconz.0.Lights.6.on' /*Küche on*/
-// 'deconz.0.Lights.9.on' /*Dunstabzugshaube on*/
-var isHallLightOn = function () {return getState('deconz.0.Lights.6.on').val || getState('deconz.0.Lights.9.on').val};
-var isOnByMotion = false;
+    light1Id        : 'deconz.0.Lights.6.on',
+    light2Id        : 'deconz.0.Lights.9.on',
 
-var logLevel = 'debug';
+    morningState    : 'scene.0.kitchen.morning',
+    dayState        : 'scene.0.kitchen.on',
+    eveningState    : 'scene.0.kitchen.evening',
+    nightState      : 'scene.0.kitchen.night',
+    offState        : 'scene.0.kitchen.off', 
 
-var localTime = new LocalTime ();
+    offDelay        : 5 * 60000,
+    logLevel        : 'debug'
+};
 
-var turnOffDelay = 5 * 60000;
-var turnOffTimer = new Timer ();
+var sensorControl = new SensorControl (parameters);
 
- //log(JSON.stringify(date));
-
- var turnOnLight = function (period) {
-     switch (period)
-     {
-        case Periods.MORNING: setState ('scene.0.kitchen.morning', true, null); break;
-        case Periods.DAY: setState ('scene.0.kitchen.on', true, null); break;
-        case Periods.EVENING: setState ('scene.0.kitchen.evening', true, null); break;
-        case Periods.NIGHT: setState ('scene.0.kitchen.night', true, null); break;
-     }
-    log('turn on light:' + period.name, logLevel);
-    isOnByMotion = true;     
- };
-
-on(presenceTrigger, function (obj) {
-  log('presence: true, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), logLevel);
-  turnOffTimer.reset ();
-  if (!isHallLightOn ()) {
-    turnOnLight (localTime.getPeriod ());
-  }
+on(sensorControl.presenceTrigger, function (obj) {
+  log('presence: true', sensorControl.parameters.logLevel);
+  sensorControl.handlePresenceTrigger ();
 });
 
-on(absenseTrigger, function (obj) {
-    log('presence: false, elapsed: ' + turnOffTimer.getElapsedMilliseconds (), logLevel);
-    if (!isOnByMotion || !isHallLightOn ()) {
-        return;
-    }
-
-    if (turnOffTimer.isElapsed(turnOffDelay)) {
-        isOnByMotion = false;
-        setState ('scene.0.kitchen.off', true, null);
-    }
+on(sensorControl.absenseTrigger, function (obj) {
+    log('presence: false', sensorControl.parameters.logLevel);
+    sensorControl.handleAbsenceTrigger ();
 });
